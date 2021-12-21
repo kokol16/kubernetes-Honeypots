@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cowrie-deployment
+  labels:
+    app: cowrie
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cowrie
+  template:
+    metadata:
+      labels:
+        app: cowrie
+    spec:
+      containers:
+      - name: cowrie
+        image: cowrie_cowrie:latest
+        imagePullPolicy: Never    
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi" #limit 128 mibytes
+            cpu: "500m" #limit 0.5 use of cup                  
+        volumeMounts:
+        - mountPath: /cowrie/cowrie-git/var/log/cowrie #path inside container
+          name: conpot-data
+        env:
+        - name: TZ
+          value: Europe/Athens
+        ports:
+        - containerPort: 2222
+          name: ssh
+        - containerPort: 2223
+          name: telnet2
+      restartPolicy: Always
+      volumes:
+      - name: conpot-data
+        hostPath:
+          path: /honeypot-logs/cowrie   #path on host os   
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: cowrie-service
+spec:
+  selector:
+    app: cowrie
+  type: LoadBalancer #for exposing ip address
+  allocateLoadBalancerNodePorts: false
+  externalTrafficPolicy: Local #for getting in logs the public ip adress of client  
+  loadBalancerIP: 139.91.130.23
+  ports:
+    - protocol: TCP	
+      name: ssh
+      port: 22 #where the service listens
+      targetPort: 2222 #where the service will forward the message(container's port)
+      #nodePort:  22 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: TCP
+      name: telnet2  	
+      port: 2223 #where the service listens
+      targetPort: 2223 #where the service will forward the message(container's port)    

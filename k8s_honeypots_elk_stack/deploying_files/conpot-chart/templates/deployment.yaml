@@ -1,0 +1,93 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "conpot-chart.fullname" . }}
+  labels:
+    {{- include "conpot-chart.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "conpot-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "conpot-chart.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "conpot-chart.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - protocol: TCP
+              containerPort: {{ .Values.service.linuxInterface.containerPortHttp }}
+              name: http
+
+            - protocol: TCP
+              containerPort: {{ .Values.service.linuxInterface.containerPortS7comm }}
+              name: s7comm   
+
+            - protocol: TCP
+              containerPort: {{ .Values.service.linuxInterface.containerPortModbus }}
+              name: modbus    
+
+            - protocol: UDP
+              containerPort: {{ .Values.service.linuxInterface.containerPortSnmp }}
+              name: snmp        
+                
+            - protocol: UDP
+              containerPort: {{ .Values.service.linuxInterface.containerPortBacnet }}
+              name: bacnet
+
+            - protocol: UDP
+              containerPort: {{ .Values.service.linuxInterface.containerPortImpi }}
+              name: impi
+
+            - protocol: TCP
+              containerPort: {{ .Values.service.linuxInterface.containerPortFtp }}
+              name: ftp
+              
+            - protocol: UDP
+              containerPort: {{ .Values.service.linuxInterface.containerPortTftp }}
+              name: tftp
+              
+            - protocol: TCP
+              containerPort: {{ .Values.service.linuxInterface.containerPortEnip }}
+              name: enip
+          volumeMounts:
+            - mountPath: {{ .Values.volumes.mountPath }}
+              name: conpot-data
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: conpot-data
+        hostPath:
+          path: {{ .Values.volumes.hostPath }}

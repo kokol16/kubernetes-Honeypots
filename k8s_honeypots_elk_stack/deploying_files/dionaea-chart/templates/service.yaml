@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "dionaea-chart.fullname" . }}
+  labels:
+    {{- include "dionaea-chart.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }} #type of service (loadBalancer)
+  loadBalancerIP:  {{ .Values.service.windowsInterface.lbIp }} #ip of loadBalancer
+  externalTrafficPolicy:  {{ .Values.service.extTrafficPolicy }}  #for getting in logs the public ip adress of client  
+  ports:
+    - port: {{ .Values.service.windowsInterface.portMsDs }}
+      targetPort: {{ .Values.service.windowsInterface.ContainerPortMsDs }}
+      protocol: TCP
+      name: {{ .Values.service.windowsInterface.msDsName }}
+    - port: {{ .Values.service.windowsInterface.portMsSql }}
+      targetPort: {{ .Values.service.windowsInterface.ContainerPortMsSql }}
+      protocol: TCP
+      name: {{ .Values.service.windowsInterface.msSqlName}}
+  selector:
+    {{- include "dionaea-chart.selectorLabels" . | nindent 4 }}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: "{{ include "dionaea-chart.fullname" . }}-{{2}}"
+  labels:
+    {{- include "dionaea-chart.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  loadBalancerIP:  {{ .Values.service.linuxInterface.lbIp }}
+  externalTrafficPolicy:  {{ .Values.service.extTrafficPolicy }}  #for getting in logs the public ip adress of client  
+  ports:
+    - port: {{ .Values.service.linuxInterface.portFtp }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortFtp }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.ftpName }}
+    
+    - port: {{ .Values.service.linuxInterface.portHostNameServer }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortHostNameServer }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.hostNameServerName}}
+    
+    - port: {{ .Values.service.linuxInterface.portTftp }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortTftp }}
+      protocol: UDP
+      name: {{ .Values.service.linuxInterface.tftpName}}
+    
+    - port: {{ .Values.service.linuxInterface.portHttp }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortHttp }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.httpName}}
+    
+    - port: {{ .Values.service.linuxInterface.portEpmap }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortEpmap }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.epmapName}}
+    
+    - port: {{ .Values.service.linuxInterface.portHttps }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortHttps }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.httpsName}}
+    
+    - port: {{ .Values.service.linuxInterface.portPptp }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortPptp }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.pptpName}}
+    
+    - port: {{ .Values.service.linuxInterface.portMqtt }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortMqtt }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.mqttName}}
+    
+    - port: {{ .Values.service.linuxInterface.portUpnp }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortUpnp }}
+      protocol: UDP
+      name: {{ .Values.service.linuxInterface.upnpName}}
+    
+    - port: {{ .Values.service.linuxInterface.portMySql }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortMySql }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.mySqlName}}
+    
+    - port: {{ .Values.service.linuxInterface.portSipTcp }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortSipTcp }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.sipTcpName}}
+    
+    - port: {{ .Values.service.linuxInterface.portSip }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortSip }}
+      protocol: UDP
+      name: {{ .Values.service.linuxInterface.sipName}}
+    
+    - port: {{ .Values.service.linuxInterface.portSipTls }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortSipTls }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.sipTlsName}}
+    
+    - port: {{ .Values.service.linuxInterface.portMemcache }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortMecache }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.memcacheName}}
+
+
+  selector:
+    {{- include "dionaea-chart.selectorLabels" . | nindent 4 }}

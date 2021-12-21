@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "conpot-chart.fullname" . }}
+  labels:
+    {{- include "conpot-chart.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  loadBalancerIP:  {{ .Values.service.linuxInterface.lbIp }}
+  externalTrafficPolicy:  {{ .Values.service.extTrafficPolicy }}  #for getting in logs the public ip adress of client  
+  ports:
+    - port: {{ .Values.service.linuxInterface.portHttp }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortHttp }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.httpName }}
+    
+    - port: {{ .Values.service.linuxInterface.portS7comm }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortS7comm }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.s7commName}}
+    
+    - port: {{ .Values.service.linuxInterface.portModbus }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortModbus }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.modbusName}}
+    
+    - port: {{ .Values.service.linuxInterface.portSnmp }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortSnmp }}
+      protocol: UDP
+      name: {{ .Values.service.linuxInterface.snmpName}}
+    
+    - port: {{ .Values.service.linuxInterface.portBacnet }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortBacnet }}
+      protocol: UDP
+      name: {{ .Values.service.linuxInterface.bacnetName}}
+    
+    - port: {{ .Values.service.linuxInterface.portImpi }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortImpi }}
+      protocol: UDP
+      name: {{ .Values.service.linuxInterface.impiName}}
+    
+    - port: {{ .Values.service.linuxInterface.portFtp }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortFtp }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.fttpName}}
+    
+    - port: {{ .Values.service.linuxInterface.portTftp }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortTftp }}
+      protocol: UDP
+      name: {{ .Values.service.linuxInterface.tftpName}}
+    
+    - port: {{ .Values.service.linuxInterface.portEnip }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortEnip }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.enipName}}
+   
+  selector:
+    {{- include "conpot-chart.selectorLabels" . | nindent 4 }}

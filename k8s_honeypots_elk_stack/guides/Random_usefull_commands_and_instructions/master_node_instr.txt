@@ -1,0 +1,79 @@
+
+
+turtorial : https://phoenixnap.com/kb/install-kubernetes-on-ubuntu
+
+======install=======
+#run these to configure your cluster
+#link: https://phoenixnap.com/kb/install-kubernetes-on-ubuntu
+
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+sudo mkdir -p $HOME/.kube	
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+
+note : for node to connect to master maybe you should need to d:qisable firewall of master (sudo ufw disable) or specificly port 6443
+==================
+
+
+=== if you restart or close master node , run these to run again=======
+swapoff -a
+sudo systemctl start kubelet    
+systemctl enable kubelet 
+
+======================================================================
+
+
+=============change node port range ======================
+sudo vim /etc/kubernetes/manifests/kube-apiserver.yaml 
+add line : - --service-node-port-range=0-44818
+
+========================================
+
+
+to see the token on master server execute: kubeadm token create --print-join-command
+
+
+kubectl exec -it my-deployment-6b9b97d749-g5d2w -- bin/bash --> this command execute a terminal inside the container
+kubectl get svc 
+
+kubeadm reset
+kubeadm init
+
+kubectl apply -f myfile.yaml  --> This runs a deployment following the directions from the myfile.yaml
+
+
+kubectl get pods --> listing all the pods
+
+kubectl describe pods --> showing more information about each pod (which node runs it, etc...)
+
+
+kubectl get deploy -A -> list all deployments
+
+kubectl delete deploy deploymentname -n namespacename --> delete a deployment
+
+kubectl delete --all deployments --namespace=default
+
+kubectl delete pod --grace-period=0 --force --namespace [NAMESPACE] [POD_NAME] --> force to delete a pod
+
+
+#filebeat deamon
+kubectl --namespace=kube-system get ds/filebeat #check filebeat is running in cluster
+kubectl logs ds/filebeat -n kube-system #check filebeat logs
+
+
+
+/etc/kubernetes/manifests/kube-apiserver.yaml
+
+    - --feature-gates=MixedProtocolLBService=true
+    - --feature-gates=ServiceLBNodePortControl=true
+
+kubectl describe service --all-namespaces | grep -i nodeport
+
+kubectl port-forward -n kubernetes-dashboard service/kubernetes-dashboard 8080:443
+https://localhost:8080
+
+
+#kill all evicted pods
+kubectl get po --all-namespaces | grep Evicted | awk '{print $2, "--namespace", $1}' | xargs kubectl delete pod

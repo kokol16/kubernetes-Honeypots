@@ -1,0 +1,74 @@
+To run a container you need to create a yml file on master node
+below you can see an example of a yml file that runs a honeypot named dionaea and exposes some ports on the outside world
+
+====example of yml file for honeypot dionaea====
+
+apiVersion - Which version of the Kubernetes API you're using to create this object
+kind - What kind of object you want to create
+metadata - Data that helps uniquely identify the object, including a name string, UID, and optional namespace
+spec - What state you desire for the object
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dionaea-deployment
+  labels:
+    app: dionaea
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dionaea
+  template:
+    metadata:
+      labels:
+        app: dionaea
+    spec:
+      containers:
+      - name: dionaea
+        image: dionaea_dionaea:latest #docker image that we use
+        imagePullPolicy: Never #this policy says that you will never pull image from docker hub for example, you will search for the image locally(on worker node that container runs)
+        #this is used to expose json-logs folder into the host os 
+        volumeMounts:
+        - mountPath: /json-logs
+          name: dioanea-data
+        #this is used for changing timezone inside the container
+        env:
+        - name: TZ
+          value: Europe/Athens
+        ports:
+        - containerPort: 21 #the port that the container has opened
+          name: ftp #name of the port
+      restartPolicy: Always #if container crushes it will automatically restart 
+      volumes:
+      - name: dioanea-data
+        hostPath:
+          path: /honeypot-logs #this is the path in the host os where the folder json-logs will be exposed                           
+---
+#we use service to expose our application to outside world
+kind: Service
+apiVersion: v1
+metadata:
+  name: dionaea-service
+spec:
+  selector:
+    app: dionaea
+  type: NodePort #for exposing ip address
+  externalTrafficPolicy: Local #for getting in logs the public ip address of client
+  ports:
+    - protocol: TCP	 #type of ports protocol 
+      name: ftp #name of protocol
+      port: 21 #where the service listens
+      targetPort: 21 #where the service will forward the message(container's port)
+
+#NOTE : type nodeport is not considered as a good practise to expose services, but in my case node port was the best solution that i found
+
+
+
+#to make a container to run on a node, from master node type 
+kubectl apply -f my_yml_file.yml
+#to confirm that container runs do the command below and you should see your deployment
+kubectl get pod 
+#to delete a pod do
+kubectl delete deployment my_deployments_name-deployment (e.g. kubectl delete deployment dionaea-deployment)
+kubectl delete service my_service_name-service

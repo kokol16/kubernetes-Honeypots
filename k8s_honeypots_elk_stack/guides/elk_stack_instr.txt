@@ -1,0 +1,13 @@
+#INSTALL ELK STACK on master node!
+
+installation guide : https://www.digitalocean.com/community/tutorials/how-to-install-elasticsearch-logstash-and-kibana-elastic-stack-on-ubuntu-18-04
+
+
+#note
+special configuration needs for logstash : i provide a logstash.conf file which parses honeypot logs and sends them to elastic search
+place logstash.conf in /etc/logstash/conf.d . It's the only conf file that you need, don't take tutorials logstash conf files.
+
+#note
+after you setup everything, if everything works properly you will see in kibana indexes, to have been created index e.g dionaea-2021.07.20(you dont have to create manually indexes!)
+then go to index patterns and create index pattern with name logstash-dionaea-* . The prefix logstash is important, because a special
+template will be applied by kibana to our index pattern that will make geoip fields to locations, in order to use maps graphs. 

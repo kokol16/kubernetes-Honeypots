@@ -1,0 +1,9 @@
+
+export CR_PAT=YOUR_TOKEN #token of your github account
+echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
+docker tag IMAGE_NAME ghcr.io/OWNER/NEW_IMAGE_NAME:TAG
+docker push ghcr.io/OWNER/IMAGE-NAME:TAG
+
+
+
+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

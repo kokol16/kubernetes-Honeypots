@@ -1,0 +1,8 @@
+followed this : https://www.securityartwork.es/2014/06/05/avoiding-dionaea-service-identification/
+
+
+changed Dockerfile to include script that querries database and creates logs
+modified dionaea/modules/python/dionaea/ftp.py so ftp dionaea is not recognized by nmap
+modified dionaea/modules/python/dionaea/smb/include/smbfields.py for microsoft-ds not to be recognized
+modified src/ssl.c  changed strings : "Nepenthes Development Team" "dionaea.carnivore.it " to prevent detection
+

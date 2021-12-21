@@ -1,0 +1,77 @@
+PUT /logstash-conpot/_mapping
+{
+  "properties": {
+      "hostgeo" : {
+          "dynamic" : "true",
+          "properties" : {
+            "continent_code" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "norms" : false
+            },
+            "country_code2" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "norms" : false
+            },
+            "country_code3" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "norms" : false
+            },
+            "country_name" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "norms" : false
+            },
+            "dma_code" : {
+              "type" : "long"
+            },
+            "ip" : {
+              "type" : "ip"
+            },
+            "latitude" : {
+              "type" : "half_float"
+            },
+            "location" : {
+              "type" : "geo_point"
+            },
+            "longitude" : {
+              "type" : "half_float"
+            },
+            "timezone" : {
+              "type" : "text",
+              "fields" : {
+                "keyword" : {
+                  "type" : "keyword",
+                  "ignore_above" : 256
+                }
+              },
+              "norms" : false
+            }
+          }
+        }
+  
+      
+  }
+}

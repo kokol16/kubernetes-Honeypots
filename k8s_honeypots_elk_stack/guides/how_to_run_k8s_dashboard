@@ -1,0 +1,12 @@
+#kubernetes dashboard is usefull as it provide a UI for seeing all the pods that run, their metrics (cpu, memory, etc...) and also has some usefull features
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.3.1/aio/deploy/recommended.yaml
+kubectl proxy
+
+kubectl port-forward -n kubernetes-dashboard service/kubernetes-dashboard 8000:443
+
+https://localhost:8080
+
+#http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+
+#get admin's token
+kubectl -n kubernetes-dashboard get secret $(kubectl -n kubernetes-dashboard get sa/admin-user -o jsonpath="{.secrets[0].name}") -o go-template="{{.data.token | base64decode}}"

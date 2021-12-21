@@ -1,0 +1,172 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: conpot-deployment
+  labels:
+    app: conpot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: conpot
+  template:
+    metadata:
+      labels:
+        app: conpot
+    spec:
+      containers:
+      - name: conpot
+        image: conpot_conpot:latest
+        imagePullPolicy: Never        
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi" #limit 128 mibytes
+            cpu: "500m" #limit 0.5 use of cup      
+        volumeMounts:
+        - mountPath: /my-logs
+          name: conpot-data
+        env:
+        - name: TZ
+          value: Europe/Athens
+        ports:
+        - containerPort: 8800
+          name: scada
+        - containerPort: 10201
+          name: s7comm
+        - containerPort: 5020
+          name: modbus
+        - containerPort: 16100
+          name: snmp
+        - containerPort: 47808
+          name: bacnet
+        - containerPort: 6230
+          name: impi
+        - containerPort: 2121
+          name: ftp
+        - containerPort: 6969
+          name: tftp
+        - containerPort: 44818
+          name: enip
+      restartPolicy: Always
+      volumes:
+      - name: conpot-data
+        hostPath:
+          path: /honeypot-logs/conpot
+                                                                                    
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: conpot-service
+spec:
+  selector:
+    app: conpot
+  type: LoadBalancer #for exposing ip address
+  loadBalancerIP: 139.91.130.22
+  allocateLoadBalancerNodePorts: false
+  externalTrafficPolicy: Local #for getting in logs the public ip adress of client   
+  ports:
+    - protocol: TCP
+      name: scada	
+      port: 80 #where the service listens
+      targetPort: 8800 #where the service will forward the message(container's port)
+    - protocol: TCP
+      name: s7comm	
+      port: 102 #where the service listens
+      targetPort: 10201 #where the service will forward the message(container's port)
+      #nodePort:  102 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: TCP	
+      name: modbus      
+      port: 502 #where the service listens
+      targetPort: 5020 #where the service will forward the message(container's port)
+      #nodePort:  502 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: UDP 
+      name: snmp	
+      port: 161 #where the service listens
+      targetPort: 16100 #where the service will forward the message(container's port)
+      #nodePort:  161 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: UDP	
+      name: bacnet
+      port: 47808 #where the service listens
+      targetPort: 47808 #where the service will forward the message(container's port)
+      #nodePort:  47808 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: UDP	 #can't really hit this with nmap!????
+      name: impi
+      port: 623 #where the service listens
+      targetPort: 6230 #where the service will forward the message(container's port)
+      #nodePort:  623 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: TCP	
+      name: ftp
+      #proper port to expose is 21 but dionaea listens already there
+      port: 21 #where the service listens
+      targetPort: 2121 #where the service will forward the message(container's port)
+      #nodePort:  2121 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: UDP	
+      name: tftp
+      #proper port to expose is 69 but dionaea listens already there
+      port: 69 #where the service listens
+      targetPort: 6969 #where the service will forward the message(container's port)
+      #nodePort:  6969 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: TCP
+      name: enip  	
+      port: 44818 #where the service listens
+      targetPort: 44818 #where the service will forward the message(container's port)
+      #nodePort:  44818 #external port range: 30000-32767 (the port that we can access from outside world)
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: conpot-service-2
+spec:
+  selector:
+    app: conpot
+  type: LoadBalancer #for exposing ip address
+  loadBalancerIP: 139.91.130.26
+  allocateLoadBalancerNodePorts: false
+  externalTrafficPolicy: Local #for getting in logs the public ip adress of client   
+  ports:
+    - protocol: TCP
+      name: s7comm	
+      port: 102 #where the service listens
+      targetPort: 10201 #where the service will forward the message(container's port)
+      #nodePort:  102 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: TCP	
+      name: modbus      
+      port: 502 #where the service listens
+      targetPort: 5020 #where the service will forward the message(container's port)
+      #nodePort:  502 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: UDP
+      name: snmp	
+      port: 161 #where the service listens
+      targetPort: 16100 #where the service will forward the message(container's port)
+      #nodePort:  161 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: UDP	
+      name: bacnet
+      port: 47808 #where the service listens
+      targetPort: 47808 #where the service will forward the message(container's port)
+      #nodePort:  47808 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: UDP	
+      name: impi
+      port: 623 #where the service listens
+      targetPort: 6230 #where the service will forward the message(container's port)
+      #nodePort:  623 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: TCP	
+      name: ftp
+      #proper port to expose is 21 but dionaea listens already there
+      port: 2121 #where the service listens
+      targetPort: 2121 #where the service will forward the message(container's port)
+      #nodePort:  2121 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: UDP	
+      name: tftp
+      #proper port to expose is 69 but dionaea listens already there
+      port: 69 #where the service listens
+      targetPort: 6969 #where the service will forward the message(container's port)
+      #nodePort:  6969 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: TCP
+      name: enip  	
+      port: 44818 #where the service listens
+      targetPort: 44818 #where the service will forward the message(container's port)
+      #nodePort:  44818 #external port range: 30000-32767 (the port that we can access from outside world)

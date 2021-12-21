@@ -1,0 +1,31 @@
+First take the files located in /ITE/k8s_honeypots_elk_stack/honeypots_files and place them inside the node's computer.
+for each tar file, untar it cd inside each honeypot folder and run command: docker-compose build.
+This command will create the docker image that we will run. docker image name will be (e.g dionaea:latest).
+
+================ on master node do =====================================
+swapoff -a
+sudo systemctl start kubelet
+systemctl enable kubelet 
+
+
+#loadbalancer usually works with only one protocol(TCP/UDP...). If you want to have multiple protocols at the same load balancer
+#you have to add the line:  - --feature-gates=MixedProtocolLBService=true in the file /etc/kubernetes/manifests/kube-apiserver.yaml
+#Also load balancer allocates some nodeports for sending the traffic from loadbalancer to the node, if want to disable that 
+#because metalb doesn't really need them add the line: - --feature-gates=ServiceLBNodePortControl=true and then in service yaml
+#file of your deployment add the line:   allocateLoadBalancerNodePorts: false
+
+#the commands below will run the helm charts that has instructions for deploying each image on node
+cd ITE/k8s_honeypots_elk_stack/deploying_files
+helm install <name>     ./conpot-chart/
+helm install <name>     ./dionaea-chart/
+helm install <name>     ./cowrie-chart/
+kubecttl apply -f filebeat-kubernetes.yaml
+=========================================================================
+
+#important note all dionaea,conpot,cowrie images must be in local machine
+#note the Docker files of each honeypot is a bit customized by me, so default github Dockerfiles for honeypots will have problems on the connection of elk stack with the honeypots logs
+
+#note in case master node reboots or closes, maybe kubectl will stop work. I usually fix this by run the 3 commands below
+swapoff -a  
+sudo systemctl start kubelet
+systemctl enable kubelet 

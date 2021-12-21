@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "dionaea-chart.fullname" . }}
+  labels:
+    {{- include "dionaea-chart.labels" . | nindent 4 }}
+spec:
+
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "dionaea-chart.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "dionaea-chart.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "dionaea-chart.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - protocol: TCP
+              containerPort: {{ .Values.service.linuxInterface.containerPortFtp }}
+              name: ftp
+            - protocol: TCP
+              containerPort: {{ .Values.service.linuxInterface.containerPortHostNameServer }}
+              name: hostnameserver   
+            - protocol: UDP
+              containerPort: {{ .Values.service.linuxInterface.containerPortTftp }}
+              name: tftp          
+            - protocol: TCP
+              containerPort: {{ .Values.service.linuxInterface.containerPortHttp }}
+              name: http
+            - protocol: TCP
+              containerPort: {{ .Values.service.linuxInterface.containerPortEpmap }}
+              name: epmap
+            - protocol: TCP
+              containerPort: {{ .Values.service.linuxInterface.containerPortHttps }}
+              name: https
+            - protocol: TCP
+              containerPort: {{ .Values.service.windowsInterface.containerPortMsDs }}
+              name: microsoftds
+            - protocol: TCP
+              containerPort: {{ .Values.service.windowsInterface.containerPortMsSql }}
+              name: mssql
+            - protocol: TCP
+              containerPort: {{ .Values.service.linuxInterface.containerPortPptp }}
+              name: pptp
+            - protocol: TCP
+              containerPort: {{ .Values.service.linuxInterface.containerPortMqtt }}
+              name: mqtt
+            - protocol: UDP
+              containerPort: {{ .Values.service.linuxInterface.containerPortUpnp }}
+              name: upnp
+            - protocol: TCP
+              containerPort: {{ .Values.service.linuxInterface.containerPortMySql }}
+              name: mysql
+            - protocol: UDP
+              containerPort: {{ .Values.service.linuxInterface.containerPortSip }}
+              name: sip
+            - protocol: TCP
+              containerPort: {{ .Values.service.linuxInterface.containerPortSipTcp }}
+              name: siptcp
+            - protocol: TCP
+              containerPort: {{ .Values.service.linuxInterface.containerPortSipTls }}
+              name: sip-tls
+            - protocol: TCP
+              containerPort: {{ .Values.service.linuxInterface.containerPortMecache }}
+              name: memcache
+
+          volumeMounts:
+            - mountPath: {{ .Values.volumes.mountPath }}
+              name: dioanea-data
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+      - name: dioanea-data
+        hostPath:
+          path: {{ .Values.volumes.hostPath }}

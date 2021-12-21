@@ -1,0 +1,267 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dionaea-deployment
+  labels:
+    app: dionaea
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dionaea
+  template:
+    metadata:
+      labels:
+        app: dionaea
+    spec:
+      containers:
+      - name: dionaea
+        image: ghcr.io/kokol16/dionaea:v1
+          #dionaea_dionaea:latest
+        imagePullPolicy: Always
+        readinessProbe:
+          exec:
+            command:
+            - file
+            - /tmp
+          initialDelaySeconds: 1
+          periodSeconds: 5   
+        #livenessProbe is used for checking if a pod is crushed and need restart
+        livenessProbe:
+          exec:
+            command:
+            - file
+            - /tmp
+          initialDelaySeconds: 5
+          periodSeconds: 5    
+        volumeMounts:
+        - mountPath: /json-logs
+          name: dioanea-data
+        env:
+        - name: TZ
+          value: Europe/Athens
+        ports:
+        - containerPort: 21
+          name: ftp
+        - containerPort: 42
+          name: nameserver          
+        - containerPort: 69
+          name: tftp          
+        - containerPort: 80
+          name: http
+        - containerPort: 135
+          name: epmap
+        - containerPort: 443
+          name: https
+        - containerPort: 445
+          name: microsoftds
+        - containerPort: 1433
+          name: mssql
+        - containerPort: 1723
+          name: pptp
+        - containerPort: 1883
+          name: mqtt
+        - containerPort: 1900
+          name: upnp
+        - containerPort: 3306
+          name: mysql
+        - containerPort: 5060
+          name: sip
+        - containerPort: 5061
+          name: sip2
+        - containerPort: 11211
+          name: memcached
+      - name: cowrie
+        image: cowrie_cowrie:latest
+        imagePullPolicy: Never                 
+        volumeMounts:
+        - mountPath: /cowrie/cowrie-git/var/log/cowrie #path inside container
+          name: cowrie-data
+        env:
+        - name: TZ
+          value: Europe/Athens
+        ports:
+        - containerPort: 2222
+          name: ssh
+        - containerPort: 2223
+          name: telnet2   
+      - name: conpot
+        image: conpot_conpot:latest
+        imagePullPolicy: Never        
+        volumeMounts:
+        - mountPath: /my-logs
+          name: conpot-data
+        env:
+        - name: TZ
+          value: Europe/Athens
+        ports:
+        - containerPort: 8800
+          name: scada
+        - containerPort: 10201
+          name: s7comm
+        - containerPort: 5020
+          name: modbus
+        - containerPort: 16100
+          name: snmp
+        - containerPort: 47808
+          name: bacnet
+        - containerPort: 6230
+          name: impi
+        - containerPort: 2121
+          name: ftp
+        - containerPort: 6969
+          name: tftp
+        - containerPort: 44818
+          name: enip
+      restartPolicy: Always
+      volumes:
+      - name: dioanea-data
+        hostPath:
+          path: /honeypot-logs/dionaea
+      - name: cowrie-data
+        hostPath:
+          path: /honeypot-logs/cowrie
+      - name: conpot-data
+        hostPath:
+          path: /honeypot-logs/conpot
+                                               
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: dionaea-service
+spec:
+  selector:
+    app: dionaea
+  ports:
+    - protocol: TCP	
+      name: ftp
+      port: 21 #where the service listensdionaea
+      targetPort: 21 #where the service will forward the message(container's port)
+    - protocol: TCP	
+      name: nameserver
+      port: 42 #where the service listens
+      targetPort: 42 #where the service will forward the message(container's port)
+    - protocol: UDP	
+      name: tftp
+      port: 69 #where the service listens
+      targetPort: 69 #where the service will forward the message(container's port)
+    - protocol: TCP	
+      name: http
+      port: 80 #where the service listens
+      targetPort: 80 #where the service will forward the message(container's port)
+    - protocol: TCP	#???
+      name: epmap
+      port: 135 #where the service listens
+      targetPort: 135 #where the service will forward the message(container's port)
+    - protocol: TCP	
+      name: https
+      port: 443 #where the service listens
+      targetPort: 443 #where the service will forward the message(container's port)
+    - protocol: TCP	
+      name: pptp
+      port: 1723 #where the service listens
+      targetPort: 1723 #where the service will forward the message(container's port)
+    - protocol: TCP	
+      name: mqtt
+      port: 1883 #where the service listens
+      targetPort: 1883 #where the service will forward the message(container's port)
+    - protocol: UDP	
+      name: upnp
+      port: 1900 #where the service listens
+      targetPort: 1900 #where the service will forward the message(container's port)
+    - protocol: TCP	
+      name: mysql
+      port: 3306 #where the service listens
+      targetPort: 3306 #where the service will forward the message(container's port)
+    - protocol: TCP
+      name: sip-tcp
+      port: 5060 #where the service listens
+      targetPort: 5060 #where the service will forward the message(container's port)    
+    - protocol: UDP	
+      name: sip
+      port: 5060 #where the service listens
+      targetPort: 5060 #where the service will forward the message(container's port)
+    - protocol: TCP	
+      name: sip-tls
+      port: 5061 #where the service listens
+      targetPort: 5061 #where the service will forward the message(container's port)
+    - protocol: TCP	
+      name: memcached
+      port: 11211 #where the service listens
+      targetPort: 11211 #where the service will forward the message(container's port)
+  type: LoadBalancer #for exposing ip address
+  loadBalancerIP: 139.91.130.24
+  externalTrafficPolicy: Local #for getting in logs the public ip adress of client   
+  allocateLoadBalancerNodePorts: false
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: dionaea-service-2
+spec:
+  selector:
+    app: dionaea
+  ports:
+    - protocol: TCP	
+      name: microsoftds
+      port: 445 #where the service listens
+      targetPort: 445 #where the service will forward the message(container's port)
+    - protocol: TCP	
+      name: mssql
+      port: 1433 #where the service listens
+      targetPort: 1433 #where the service will forward the message(container's port)
+    - protocol: TCP	
+      name: ssh
+      port: 22 #where the service listens
+      targetPort: 2222 #where the service will forward the message(container's port)
+    - protocol: TCP
+      name: scada	
+      port: 80 #where the service listens
+      targetPort: 8800 #where the service will forward the message(container's port)
+    - protocol: TCP
+      name: s7comm	
+      port: 102 #where the service listens
+      targetPort: 10201 #where the service will forward the message(container's port)
+      #nodePort:  102 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: TCP	
+      name: modbus      
+      port: 502 #where the service listens
+      targetPort: 5020 #where the service will forward the message(container's port)
+      #nodePort:  502 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: UDP 
+      name: snmp	
+      port: 161 #where the service listens
+      targetPort: 16100 #where the service will forward the message(container's port)
+      #nodePort:  161 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: UDP	
+      name: bacnet
+      port: 47808 #where the service listens
+      targetPort: 47808 #where the service will forward the message(container's port)
+      #nodePort:  47808 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: UDP	 #can't really hit this with nmap!????
+      name: impi
+      port: 623 #where the service listens
+      targetPort: 6230 #where the service will forward the message(container's port)
+      #nodePort:  623 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: TCP	
+      name: ftp
+      #proper port to expose is 21 but dionaea listens already there
+      port: 21 #where the service listens
+      targetPort: 2121 #where the service will forward the message(container's port)
+      #nodePort:  2121 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: UDP	
+      name: tftp
+      #proper port to expose is 69 but dionaea listens already there
+      port: 69 #where the service listens
+      targetPort: 6969 #where the service will forward the message(container's port)
+      #nodePort:  6969 #external port range: 30000-32767 (the port that we can access from outside world)
+    - protocol: TCP
+      name: enip  	
+      port: 44818 #where the service listens
+      targetPort: 44818 #where the service will forward the message(container's port)
+      #nodePort:  44818 #external port range: 30000-32767 (the port that we can access from outside world)
+  type: LoadBalancer #for exposing ip address
+  loadBalancerIP: 139.91.130.25
+  externalTrafficPolicy: Local #for getting in logs the public ip adress of client   
+  allocateLoadBalancerNodePorts: false

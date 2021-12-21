@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cowrie-chart.fullname" . }}
+  labels:
+    {{- include "cowrie-chart.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  loadBalancerIP:  {{ .Values.service.linuxInterface.lbIp }}
+  externalTrafficPolicy:  {{ .Values.service.extTrafficPolicy }}  #for getting in logs the public ip adress of client  
+  ports:
+    - port: {{ .Values.service.linuxInterface.portSsh }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortSsh }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.sshName }}
+    
+    - port: {{ .Values.service.linuxInterface.portTelnet }}
+      targetPort: {{ .Values.service.linuxInterface.containerPortTelnet }}
+      protocol: TCP
+      name: {{ .Values.service.linuxInterface.telnetName}}
+  selector:
+    {{- include "cowrie-chart.selectorLabels" . | nindent 4 }}

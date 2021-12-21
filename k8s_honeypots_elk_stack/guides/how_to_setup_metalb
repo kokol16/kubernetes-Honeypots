@@ -1,0 +1,13 @@
+#Metalb is a loadbalancer that we can use without having a cloud provider
+more info: https://metallb.universe.tf , https://metallb.universe.tf/configuration/
+
+#to run metalb, run the following commands
+kubectl apply -f deploying_files/namespace.yaml 
+kubectl apply -f deploying_files/metalb.yaml
+kubectl apply -f deploying_files/config.yaml
+#note on file config.yaml you can specify the pool of the adress that loadbalancer can allocate
+
+
+
+
+

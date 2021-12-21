@@ -1,0 +1,12 @@
+Architecture of the whole system
+===========================================================================================================
+We have a k8s cluster with one master node and one slave node.
+master node gives the instructions to run 3 honeypots (dionaea, conpot, cowrie) on slave node.
+honeypots create logs which all get mounted on host folder /honeypot-logs from where are accessbile.
+Also another container runs in slave which is filebeat, who takes the logs from the /honeypot-logs folder
+and sends them to logstash which is installed in master node. Then logstash sends the logs to elasticsearch
+where they get stored and lastly kibana querries elastic search and visualizes the logs. For the honeypots to
+listen to a specific ip, we run in our kubernetes a load balancer called MetaLB, which we provide with our
+available ips. Then on each honeypot helm chart, values.yml file, we provide the loadbalancer ip that the 
+honeypot will Listen.
+===========================================================================================================
