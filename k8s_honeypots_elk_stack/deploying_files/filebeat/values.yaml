@@ -88,7 +88,7 @@ deployment:
   
       output.logstash:
         enabled: true
-        hosts: ["139.91.71.18:5044"]
+        hosts: [""]
         ssl.certificate_authorities: ["/certs/ca.crt"]
         ssl.certificate: "/certs/client.crt"
         ssl.key: "/certs/client.key"
